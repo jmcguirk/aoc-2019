@@ -25,7 +25,7 @@ func (this *Problem1B) Solve() {
 
 	var totalFuelRequired int64 = 0;
 
-	for scanner.Scan() {             // internally, it advances token based on sperator
+	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text());
 		if(line != ""){
 			mass, err := strconv.ParseInt(line, 10, 64);
