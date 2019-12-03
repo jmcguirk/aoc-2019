@@ -2,8 +2,8 @@ package main
 
 import (
 	"bufio"
+	"math"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -15,7 +15,7 @@ func (this *Problem3A) Solve() {
 	Log.Info("Problem 3A solver beginning!")
 
 
-	file, err := os.Open("source-data/input-day-01a.txt");
+	file, err := os.Open("source-data/input-day-03a.txt");
 	if err != nil {
 		Log.FatalError(err);
 	}
@@ -23,19 +23,51 @@ func (this *Problem3A) Solve() {
 
 	scanner := bufio.NewScanner(file)
 
-	var totalFuelRequired int64 = 0;
-	for scanner.Scan() {             // internally, it advances token based on sperator
-		line := strings.TrimSpace(scanner.Text());
-		if(line != ""){
-			mass, err := strconv.ParseInt(line, 10, 64);
+
+
+
+	lineId := 0;
+	allLines := make(map[int]*TwistyLine)
+
+	for scanner.Scan() {
+		lineRaw := strings.TrimSpace(scanner.Text());
+		if(lineRaw != ""){
+			line := &TwistyLine{};
+			line.Id = lineId;
+			lineId++;
+			err := line.Parse(lineRaw);
 			if(err != nil){
 				Log.FatalError(err);
 			}
-			fuelRequired := mass /3;
-			fuelRequired = fuelRequired -2;
-			//Log.Info("Fuel Required For %d is %d", mass, fuelRequired);
-			totalFuelRequired += fuelRequired;
+			allLines[line.Id] = line;
+			//Log.Info("Added line with %d segments", len(line.LineSegments));
 		}
 	}
-	Log.Info("Finished parsing file - total fuel required is %d", totalFuelRequired);
+
+	grid := &IntegerGrid2D{};
+	grid.Init();
+
+	allIntersections := make([]*IntVec2, 0);
+
+
+
+	for _, line := range allLines {
+		intersects := line.Apply(grid);
+		for _, point := range intersects {
+			allIntersections = append(allIntersections, point)
+		}
+	}
+
+	origin := &IntVec2{};
+	origin.X = 0;
+	origin.Y = 0;
+
+	minDistance := math.MaxInt64;
+	for _, intersection := range allIntersections {
+		dist := intersection.ManhattanDistance(origin)
+		if(dist < minDistance){
+			minDistance = dist;
+		}
+	}
+	Log.Info("Finished parsing file %d twisty lines - found %d intersections - closest at %d", len(allLines), len(allIntersections), minDistance);
 }
