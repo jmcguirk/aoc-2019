@@ -64,7 +64,10 @@ func (this *IntegerGrid2D) GetValue(x int, y int) int {
 type TwistyLine struct {
 	Id  			int;
 	LineSegments	[]*TwistyLineSegment;
+	VisitedGrid		*IntegerGrid2D;
 }
+
+
 
 const LineDirectionUp = 0;
 const LineDirectionDown = 1;
@@ -73,6 +76,8 @@ const LineDirectionRight = 3;
 
 func (this *TwistyLine) Parse(line string) error {
 	this.LineSegments = make([]*TwistyLineSegment, 0);
+	this.VisitedGrid = &IntegerGrid2D{};
+	this.VisitedGrid.Init();
 	parts := strings.Split(line, ",");
 	for _, part := range parts{
 		trimmed := strings.TrimSpace(part);
@@ -117,29 +122,19 @@ type TwistyLineSegment struct {
 	Direction int;
 }
 
-type IntVec2 struct{
-	X 		int;
-	Y		int;
+func (this *TwistyLine) StepsToIntersection(intersection *IntVec2) int {
+	if(!this.VisitedGrid.IsVisited(intersection.X, intersection.Y)){
+		return -1;
+	}
+	return this.VisitedGrid.GetValue(intersection.X, intersection.Y);
 }
 
-func (this *IntVec2) ManhattanDistance(other *IntVec2) int{
-	xComp := this.X - other.X;
-	if(xComp < 0){
-		xComp *= -1;
-	}
-	yComp := this.Y - other.Y;
-	if(yComp < 0){
-		yComp *= -1;
-	}
-	return xComp + yComp;
-}
 
 func (this *TwistyLine) Apply(grid *IntegerGrid2D) []*IntVec2  {
 	res := make([]*IntVec2, 0);
-	selfVisited := &IntegerGrid2D{};
-	selfVisited.Init();
 	x := 0;
 	y := 0;
+	step := 0;
 	for _, segment := range this.LineSegments {
 		for i := 0; i < segment.Magnitude; i++ {
 			switch segment.Direction {
@@ -156,13 +151,14 @@ func (this *TwistyLine) Apply(grid *IntegerGrid2D) []*IntVec2  {
 					x++;
 					break;
 			}
+			step++;
 			if(x == 0 && y == 0){ // Don't bother marking the origin
 				continue;
 			}
-			if(selfVisited.IsVisited(x, y)){
+			if(this.VisitedGrid.IsVisited(x, y)){
 				continue;
 			}
-			selfVisited.Visit(x, y);
+			this.VisitedGrid.SetValue(x, y, step);
 			intersects := grid.Visit(x, y);
 			if(intersects > 1){
 				point := &IntVec2{};

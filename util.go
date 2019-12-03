@@ -7,7 +7,7 @@ import (
 )
 
 func FormatDuration(duration time.Duration) string{
-	return FormatDurationMS(duration.Milliseconds())
+	return FormatDurationMS(int64(duration.Seconds() * 1000));
 }
 
 func FormatDurationMS(durationMS int64) string{
@@ -24,4 +24,23 @@ func FormatDurationMS(durationMS int64) string{
 	}
 	hr := mins / 60;
 	return fmt.Sprintf("%.2fh", hr);
+}
+
+
+type IntVec2 struct{
+	X 		int;
+	Y		int;
+}
+
+
+func (this *IntVec2) ManhattanDistance(other *IntVec2) int{
+	xComp := this.X - other.X;
+	if(xComp < 0){
+		xComp *= -1;
+	}
+	yComp := this.Y - other.Y;
+	if(yComp < 0){
+		yComp *= -1;
+	}
+	return xComp + yComp;
 }
