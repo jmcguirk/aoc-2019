@@ -2,6 +2,7 @@ package main;
 
 import (
 	"fmt"
+	"math/big"
 	"strconv"
 	"time"
 )
@@ -43,4 +44,16 @@ func (this *IntVec2) ManhattanDistance(other *IntVec2) int{
 		yComp *= -1;
 	}
 	return xComp + yComp;
+}
+
+func nthDigit(bigI *big.Int, n int64) int {
+	var quotient big.Int
+	quotient.Exp(big.NewInt(10), big.NewInt(n), nil)
+
+	bigI.Div(bigI, &quotient)
+
+	var result big.Int
+	result.Mod(bigI, big.NewInt(10))
+
+	return int(result.Int64());
 }
