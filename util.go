@@ -57,3 +57,36 @@ func nthDigit(bigI *big.Int, n int64) int {
 
 	return int(result.Int64());
 }
+
+func IsGTEOrEqual(registersA []int, registersB []int) bool {
+	for i, v := range registersA{
+		if(v > registersB[i]){
+			return true;
+		}
+		if(v < registersB[i]){
+			return false;
+		}
+	}
+	return true;
+}
+
+func IsGTE(registersA []int, registersB []int) bool {
+	for i, v := range registersA{
+		if(v > registersB[i]){
+			return true;
+		}
+		if(v < registersB[i]){
+			return false;
+		}
+	}
+	return false;
+}
+
+func IsEQ(registersA []int, registersB []int) bool {
+	for i, v := range registersA{
+		if(v != registersB[i]){
+			return false;
+		}
+	}
+	return true;
+}

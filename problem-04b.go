@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-type Problem4A struct {
+type Problem4B struct {
 
 	Registers []int;
 	MaxRegisters []int;
@@ -14,8 +14,8 @@ type Problem4A struct {
 	Matches int;
 }
 
-func (this *Problem4A) Solve() {
-	Log.Info("Problem 4A solver beginning!")
+func (this *Problem4B) Solve() {
+	Log.Info("Problem 4B solver beginning!")
 
 
 	this.Registers = make([]int, 6);
@@ -35,14 +35,14 @@ func (this *Problem4A) Solve() {
 }
 
 
-func (this *Problem4A) LogAndExit() {
+func (this *Problem4B) LogAndExit() {
 	Log.Info("Completed odometer loop - found %d matches ", this.Matches);
 	os.Exit(0);
 }
 
 
 
-func (this *Problem4A) LoopOdometer(index int, parentHasDupe bool) {
+func (this *Problem4B) LoopOdometer(index int, parentHasDupe bool) {
 
 	min := this.Registers[index];
 	if(index > 0){
@@ -72,7 +72,7 @@ func (this *Problem4A) LoopOdometer(index int, parentHasDupe bool) {
 				this.LogAndExit();
 			}
 			if(parentHasDupe || weHaveDupe){
-				if(IsGTE(this.Registers, this.MinRegisters)){
+				if(IsGTE(this.Registers, this.MinRegisters) && this.ContainsPreciseSequence(this.Registers)){
 					this.Matches++;
 					this.LogBuff(this.Registers);
 				}
@@ -82,7 +82,33 @@ func (this *Problem4A) LoopOdometer(index int, parentHasDupe bool) {
 	}
 }
 
-func (this *Problem4A) LoadIntoBuff(registers []int, bigInt *big.Int) {
+func (this *Problem4B) ContainsPreciseSequence(registers []int) bool {
+
+	seqCount := 0;
+	lastVal := -1;
+	for _, v := range registers{
+		if(lastVal < -1){
+			lastVal = v;
+			seqCount = 1;
+		} else {
+			if(lastVal == v){
+				seqCount++;
+			} else{
+				if(seqCount == 2){
+					return true;
+				}
+				seqCount = 1;
+				lastVal = v;
+			}
+		}
+	}
+	if(seqCount == 2){
+		return true;
+	}
+	return false;
+}
+
+func (this *Problem4B) LoadIntoBuff(registers []int, bigInt *big.Int) {
 
 	Log.Info("Loading %d " , bigInt.Int64());
 	for i, _ := range registers{
@@ -92,11 +118,11 @@ func (this *Problem4A) LoadIntoBuff(registers []int, bigInt *big.Int) {
 	}
 }
 
-func (this *Problem4A) LogRegisters() {
+func (this *Problem4B) LogRegisters() {
 	this.LogBuff(this.Registers);
 }
 
-func (this *Problem4A) IsEQStr(val string) bool {
+func (this *Problem4B) IsEQStr(val string) bool {
 	buff := "";
 	for _, v := range this.Registers{
 		buff += strconv.Itoa(v);
@@ -111,7 +137,7 @@ func (this *Problem4A) IsEQStr(val string) bool {
 
 
 
-func (this *Problem4A) LogBuff(registers[]int) {
+func (this *Problem4B) LogBuff(registers[]int) {
 
 	buff := "";
 	for _, v := range registers{
