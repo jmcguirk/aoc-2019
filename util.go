@@ -58,6 +58,20 @@ func nthDigit(bigI *big.Int, n int64) int {
 	return int(result.Int64());
 }
 
+func nthDigit64(val int64, n int64) int {
+	var quotient big.Int
+	quotient.Exp(big.NewInt(10), big.NewInt(n), nil)
+
+	bigI := big.NewInt(val);
+	bigI.Div(bigI, &quotient)
+
+	var result big.Int
+	result.Mod(bigI, big.NewInt(10))
+
+	return int(result.Int64());
+}
+
+
 func IsGTEOrEqual(registersA []int, registersB []int) bool {
 	for i, v := range registersA{
 		if(v > registersB[i]){

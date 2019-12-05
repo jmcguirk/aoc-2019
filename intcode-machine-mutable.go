@@ -16,9 +16,7 @@ type IntcodeMachineMutable struct {
 
 const InstructionPointerJumpSize = 4;
 
-const IntCodeOpCodeAdd = 1;
-const IntCodeOpCodeMul = 2;
-const IntCodeOpCodeHalt = 99;
+
 
 func (this *IntcodeMachineMutable) Load(fileName string) error {
 	Log.Info("Loading intcode machine from %s", fileName)
