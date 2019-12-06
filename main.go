@@ -4,7 +4,7 @@ func main() {
 	Log.Init();
 	Log.Info("Starting up AOC 2019");
 
-	solver := Problem5B{};
+	solver := Problem6B{};
 
 	solver.Solve();
 	Log.Info("Solver complete - exiting");

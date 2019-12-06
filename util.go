@@ -3,6 +3,7 @@ package main;
 import (
 	"fmt"
 	"math/big"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -82,6 +83,14 @@ func IsGTEOrEqual(registersA []int, registersB []int) bool {
 		}
 	}
 	return true;
+}
+
+func ReverseSlice(s interface{}) {
+	size := reflect.ValueOf(s).Len()
+	swap := reflect.Swapper(s)
+	for i, j := 0, size-1; i < j; i, j = i+1, j-1 {
+		swap(i, j)
+	}
 }
 
 func IsGTE(registersA []int, registersB []int) bool {
