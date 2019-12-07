@@ -1,0 +1,36 @@
+Toy example that implements
+
+Output = (2*Input1) + Input2
+
+3,6,                // Take the first input and place it position 6
+3,10,               // Take the second input and place it in position 10
+1102,2,-6,9,        // Multiply the first input (pos 6) by 2 and store it in position 9
+1101,-9,-10,2,      // Add together the the output (pos 9) from the previous step (2x Input 1) to Input 2 and store it in position 2
+4,2,                // Display the contents of pos 2 (result of our last step)
+99                  // Halt
+
+
+Instruction Stream
+---
+[EXEC - 0] INPUT POS
+[EXEC - 1] INPUT POS
+[EXEC - 2] MUL IMM IMM POS
+[EXEC - 3] ADD IMM IMM POS
+[EXEC - 4] OUTPUT POS
+[EXEC - 5] HALT
+
+Test Cases
+---
+Input 1 = 2
+Input 2 = 7
+Output = 11
+
+---
+Input 1 = 10
+Input 2 = 5
+Output = 25
+
+---
+Input 1 = 7
+Input 2 = 9
+Output = 23
