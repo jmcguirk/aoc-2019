@@ -12,8 +12,11 @@ type IntcodeMachineV2 struct {
 	InitialState []int64;
 	InstructionPointer int64;
 	InstructionsExecuted int;
-	CurrentInputVal int64;
+	InputQueue []int64;
 	LastOutput int;
+	LastOutputValue int64;
+	HasHalted bool;
+	PauseOnOutput bool;
 }
 
 type IntcodeInstruction struct{
@@ -124,12 +127,19 @@ func (this *IntcodeInstruction) Describe() string {
 
 func (this *IntcodeMachineV2) SetInputValue(val int64) {
 	Log.Info("Setting input value to %d", val);
-	this.CurrentInputVal = val;
+	this.InputQueue = append(this.InputQueue, val);
 }
+
+func (this *IntcodeMachineV2) QueueInput(val int64) {
+	//Log.Info("Queuing input value %d", val);
+	this.InputQueue = append(this.InputQueue, val);
+}
+
 
 func (this *IntcodeMachineV2) Load(fileName string) error {
 	Log.Info("Loading intcode v2 machine from %s", fileName)
 	this.Registers = make([]int64, 0);
+	this.InputQueue = make([]int64, 0);
 
 	file, err := ioutil.ReadFile(fileName);
 	if err != nil {
@@ -150,10 +160,11 @@ func (this *IntcodeMachineV2) Load(fileName string) error {
 
 	// Reset the function pointer to start at the beginning
 	this.InstructionPointer = 0;
-
+	this.LastOutputValue = 0;
 
 	this.InitialState = make([]int64, len(this.Registers));
 	copy(this.InitialState, this.Registers);
+	this.InputQueue = make([]int64, 0);
 
 
 	Log.Info("Finished parsing machine initial state - %d registers", len(this.Registers));
@@ -164,6 +175,10 @@ func (this *IntcodeMachineV2) Load(fileName string) error {
 func (this *IntcodeMachineV2) Reset() {
 	//Log.Info("Performing reset");
 	this.InstructionPointer = 0;
+	this.LastOutputValue = 0;
+	this.InputQueue = make([]int64, 0);
+	this.LastOutput = 0;
+	this.HasHalted = false;
 	copy(this.Registers, this.InitialState);
 }
 
@@ -206,6 +221,9 @@ func (this *IntcodeMachineV2) Execute() error {
 				if(err != nil){
 					return err;
 				}
+				if(this.PauseOnOutput){
+					return nil;
+				}
 				break;
 			case IntCodeOpCodeJumpIfTrue:
 				err := this.ExecuteJumpIfTrue(instruction);
@@ -232,7 +250,8 @@ func (this *IntcodeMachineV2) Execute() error {
 				}
 				break;
 			case IntCodeOpCodeHalt:
-				Log.Info("Program halting after %d instructions executed - last output executed was %d", this.InstructionsExecuted, this.LastOutput);
+				//Log.Info("Program halting after %d instructions executed - last output executed was %d", this.InstructionsExecuted, this.LastOutput);
+				this.HasHalted = true;
 				return nil;
 				break;
 			default:
@@ -273,7 +292,8 @@ func (this *IntcodeMachineV2) ExecuteOutput(instruction *IntcodeInstruction) err
 		term1 = this.GetValueAtRegister(term1);
 	}
 
-	Log.Info("[OUTPUT] - " + strconv.FormatInt(term1, 10));
+	//Log.Info("[OUTPUT] - " + strconv.FormatInt(term1, 10));
+	this.LastOutputValue = term1;
 	this.InstructionPointer += int64(instruction.OperationLength);
 	return nil;
 }
@@ -486,12 +506,19 @@ func (this *IntcodeMachineV2) ExecuteInput(instruction *IntcodeInstruction) erro
 
 	term1Register := this.InstructionPointer+1;
 	if(term1Register >= int64(len(this.Registers))){
-		return errors.New("Add instruction went outside bounds " + strconv.FormatInt(this.InstructionPointer, 10));
+		return errors.New("Input instruction went outside bounds " + strconv.FormatInt(this.InstructionPointer, 10));
 	}
 	destPosition := this.GetValueAtRegister(term1Register);
 
-	Log.Info("[INPUT] - Received " + strconv.FormatInt(this.CurrentInputVal, 10));
-	this.SetValueAtRegister(destPosition, this.CurrentInputVal);
+	if(len(this.InputQueue) <= 0){
+		return errors.New("Input instruction had no pending input");
+	}
+
+	inputVal := this.InputQueue[0];
+	this.InputQueue = this.InputQueue[1:];
+
+	//Log.Info("[INPUT] - Proccessed Input " + strconv.FormatInt(inputVal, 10));
+	this.SetValueAtRegister(destPosition, inputVal);
 	this.InstructionPointer += int64(instruction.OperationLength);
 	return nil;
 }

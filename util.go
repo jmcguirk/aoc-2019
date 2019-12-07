@@ -59,6 +59,25 @@ func nthDigit(bigI *big.Int, n int64) int {
 	return int(result.Int64());
 }
 
+// Perm calls f with each permutation of a.
+func Perm(a []int64, f func([]int64)) {
+	perm(a, f, 0)
+}
+
+// Permute the values at index i to len(a)-1.
+func perm(a []int64, f func([]int64), i int) {
+	if i > len(a) {
+		f(a)
+		return
+	}
+	perm(a, f, i+1)
+	for j := i + 1; j < len(a); j++ {
+		a[i], a[j] = a[j], a[i]
+		perm(a, f, i+1)
+		a[i], a[j] = a[j], a[i]
+	}
+}
+
 func nthDigit64(val int64, n int64) int {
 	var quotient big.Int
 	quotient.Exp(big.NewInt(10), big.NewInt(n), nil)
