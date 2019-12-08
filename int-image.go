@@ -1,7 +1,12 @@
 package main
 
 import (
+	"github.com/nfnt/resize"
+	"image"
+	"image/color"
+	"image/png"
 	"io/ioutil"
+	"os"
 	"strconv"
 )
 
@@ -101,12 +106,8 @@ func (this *IntImageLayer) GetHistValue(value int) int {
 }
 
 
-func (this *IntImage) FlattenAndDraw() string {
-
+func (this *IntImage) Flatten() [][]int{
 	transparentPixel := 2;
-	//whitePixel := 1;
-	//blackPixel := 0;
-
 	data := make([][]int, this.Height);
 	for i := 0; i < this.Height; i++ {
 		data[i] = make([]int, this.Width);
@@ -114,11 +115,6 @@ func (this *IntImage) FlattenAndDraw() string {
 			data[i][j] = transparentPixel;
 		}
 	}
-
-
-
-
-
 	for _, layer := range this.Layers {
 		for i, row := range layer.Data {
 			for j, v := range row{
@@ -131,6 +127,16 @@ func (this *IntImage) FlattenAndDraw() string {
 			}
 		}
 	}
+	return data;
+}
+
+func (this *IntImage) FlattenAndDraw() string {
+
+
+	//whitePixel := 1;
+	//blackPixel := 0;
+
+	data := this.Flatten();
 
 
 	buff := "\n";
@@ -149,6 +155,47 @@ func (this *IntImage) FlattenAndDraw() string {
 	}
 
 	return buff;
+}
+
+func (this *IntImage) FlattenAndRenderToFile(fileName string, targetWidth int) {
+
+
+	//whitePixel := 1;
+	//blackPixel := 0;
+
+	data := this.Flatten();
+
+	padding := 2;
+
+	width := this.Width + (padding*2);
+	height := this.Height +  (padding*2);
+
+	upLeft := image.Point{0, 0}
+	lowRight := image.Point{width, height}
+
+	img := image.NewRGBA(image.Rectangle{upLeft, lowRight})
+
+	for x := 0; x < width; x++ {
+		for y := 0; y < width; y++ {
+			img.Set(x, y, color.White);
+		}
+	}
+
+	// Set color for each pixel.
+	for x := 0; x < this.Width; x++ {
+		for y := 0; y < this.Height; y++ {
+			if(data[y][x] != 0){
+				img.Set(x+padding, y+padding, color.Black)
+			}
+		}
+	}
+
+	// Encode
+	m := resize.Resize(uint(targetWidth), 0, img, resize.MitchellNetravali)
+	//as PNG.
+	f, _ := os.Create(fileName)
+	png.Encode(f, m)
+	Log.Info("Rendered int image %s to %s ", this.FileName, fileName);
 }
 
 

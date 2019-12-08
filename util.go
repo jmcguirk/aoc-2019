@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -91,6 +92,13 @@ func nthDigit64(val int64, n int64) int {
 	return int(result.Int64());
 }
 
+func UpperAlphaCharacters() string {
+	p := make([]byte, 26)
+	for i := range p {
+		p[i] = 'a' + byte(i)
+	}
+	return strings.ToUpper(string(p));
+}
 
 func IsGTEOrEqual(registersA []int, registersB []int) bool {
 	for i, v := range registersA{
