@@ -48,9 +48,12 @@ func (this *IntVec2) ManhattanDistance(other *IntVec2) int{
 	return xComp + yComp;
 }
 
-func nthDigit(bigI *big.Int, n int64) int {
+func nthDigit(input *big.Int, n int64) int {
 	var quotient big.Int
 	quotient.Exp(big.NewInt(10), big.NewInt(n), nil)
+
+	bigI := new(big.Int);
+	bigI.Set(input);
 
 	bigI.Div(bigI, &quotient)
 
@@ -91,6 +94,7 @@ func nthDigit64(val int64, n int64) int {
 
 	return int(result.Int64());
 }
+
 
 func UpperAlphaCharacters() string {
 	p := make([]byte, 26)

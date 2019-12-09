@@ -19,110 +19,8 @@ type IntcodeMachineV2 struct {
 	PauseOnOutput bool;
 }
 
-type IntcodeInstruction struct{
-	Operation int;
-	FistParameterMode int;
-	SecondParameterMode int;
-	ThirdParameterMode int;
-	OperationLength int;
-}
 
-func (this *IntcodeInstruction) DeriveLength() {
-	switch(this.Operation){
-		case IntCodeOpCodeAdd:
-			this.OperationLength = 4;
-			break;
-		case IntCodeOpCodeMul:
-			this.OperationLength = 4;
-			break;
-		case IntCodeOpCodeHalt:
-			this.OperationLength = 1;
-			break;
-		case IntCodeOpCodeInput:
-			this.OperationLength = 2;
-			break;
-		case IntCodeOpCodeOutput:
-			this.OperationLength = 2;
-			break;
-		case IntCodeOpCodeJumpIfTrue:
-			this.OperationLength = 3;
-			break;
-		case IntCodeOpCodeJumpIfFalse:
-			this.OperationLength = 3;
-			break;
-		case IntCodeOpCodeLessThan:
-			this.OperationLength = 4;
-			break;
-		case IntCodeOpCodeEquals:
-			this.OperationLength = 4;
-			break;
-		}
-}
 
-func (this *IntcodeInstruction) Describe() string {
-	buff := "";
-	switch(this.Operation){
-		case IntCodeOpCodeAdd:
-			buff += "ADD";
-			break;
-		case IntCodeOpCodeMul:
-			buff += "MUL";
-			break;
-		case IntCodeOpCodeHalt:
-			buff += "HALT";
-			break;
-		case IntCodeOpCodeInput:
-			buff += "INPUT";
-			break;
-		case IntCodeOpCodeOutput:
-			buff += "OUTPUT";
-			break;
-		case IntCodeOpCodeJumpIfTrue:
-			buff += "JIT";
-			break;
-		case IntCodeOpCodeJumpIfFalse:
-			buff += "JIF";
-			break;
-		case IntCodeOpCodeLessThan:
-			buff += "LT";
-			break;
-		case IntCodeOpCodeEquals:
-			buff += "EQ";
-			break;
-	}
-	buff += "(";
-	buff += strconv.Itoa(this.OperationLength);
-	buff += ")";
-	switch this.FistParameterMode {
-		case ParameterModePosition:
-			buff += " POS";
-			break;
-		case ParameterModeImmediate:
-			buff += " IMM";
-			break;
-	}
-	if(this.OperationLength > 2){
-		switch this.SecondParameterMode {
-			case ParameterModePosition:
-				buff += " POS";
-				break;
-			case ParameterModeImmediate:
-				buff += " IMM";
-				break;
-			}
-	}
-	if(this.OperationLength > 3){
-		switch this.ThirdParameterMode {
-			case ParameterModePosition:
-				buff += " POS";
-				break;
-			case ParameterModeImmediate:
-				buff += " IMM";
-				break;
-		}
-	}
-	return buff;
-}
 
 
 func (this *IntcodeMachineV2) SetInputValue(val int64) {
@@ -131,7 +29,7 @@ func (this *IntcodeMachineV2) SetInputValue(val int64) {
 }
 
 func (this *IntcodeMachineV2) QueueInput(val int64) {
-	//Log.Info("Queuing input value %d", val);
+	Log.Info("Queuing input value %d", val);
 	this.InputQueue = append(this.InputQueue, val);
 }
 
@@ -193,7 +91,7 @@ func (this *IntcodeMachineV2) Execute() error {
 			return err;
 		}
 
-		//Log.Info("[EXEC - " + strconv.Itoa(this.InstructionsExecuted) + "] " + instruction.Describe());
+		Log.Info("[EXEC - " + strconv.Itoa(this.InstructionsExecuted) + "] " + instruction.Describe());
 		//Log.Fatal("Early exit " + instruction.Describe());
 
 		switch(instruction.Operation){
@@ -266,7 +164,7 @@ func (this *IntcodeMachineV2) Execute() error {
 func (this *IntcodeMachineV2) ParseOperation() (*IntcodeInstruction, error){
 	res := &IntcodeInstruction{};
 	rawVal := this.Registers[this.InstructionPointer];
-
+	Log.Info("Parsing instruction from %d", rawVal);
 	op1 := nthDigit64(rawVal, 0);
 	op2 := nthDigit64(rawVal, 1);
 	res.Operation = op1 + (op2 * 10);
@@ -336,6 +234,7 @@ func (this *IntcodeMachineV2) ExecuteAdd(instruction *IntcodeInstruction) error 
 	}
 	sum := term1 + term2;
 	this.SetValueAtRegister(destPosition, sum);
+	Log.Info("executed add %d stored at %d", sum, destPosition);
 	this.InstructionPointer += int64(instruction.OperationLength);
 	return nil;
 }
@@ -517,7 +416,7 @@ func (this *IntcodeMachineV2) ExecuteInput(instruction *IntcodeInstruction) erro
 	inputVal := this.InputQueue[0];
 	this.InputQueue = this.InputQueue[1:];
 
-	//Log.Info("[INPUT] - Proccessed Input " + strconv.FormatInt(inputVal, 10));
+	Log.Info("[INPUT] - Proccessed Input " + strconv.FormatInt(inputVal, 10) + " - stored in " + strconv.FormatInt(destPosition, 10));
 	this.SetValueAtRegister(destPosition, inputVal);
 	this.InstructionPointer += int64(instruction.OperationLength);
 	return nil;
