@@ -2,12 +2,16 @@ package main;
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
 )
+
+const slopeEpsilon = 0.00001;
+const distEpsilon = 0.00001;
 
 func FormatDuration(duration time.Duration) string{
 	return FormatDurationMS(int64(duration.Seconds() * 1000));
@@ -47,6 +51,65 @@ func (this *IntVec2) ManhattanDistance(other *IntVec2) int{
 	}
 	return xComp + yComp;
 }
+
+func (this *IntVec2) Slope(other *IntVec2) float32{
+	if(other.X == this.X){
+		return math.MaxFloat32;
+	}
+	return float32((other.Y - this.Y)) / float32((other.X - this.X));
+}
+
+func (this *IntVec2) Distance(other *IntVec2) float32{
+	distX := (this.X - other.X);
+	distY := (this.Y - other.Y);
+	return float32(math.Sqrt(float64((distX*distX) + (distY*distY))));
+}
+
+func (this *IntVec2) Angle (other *IntVec2) float32{
+	return float32(math.Atan2(float64(other.Y - this.Y), float64(other.X - this.X)));
+	//atan2(y2 - y1, x2 - x1) * 180 / PI;
+}
+
+func (this *IntVec2) GetVisiblePoints(points []*IntVec2) []*IntVec2{
+	res := make([]*IntVec2, 0);
+	candidate := this;
+	for _, neighbor := range points {
+		if(neighbor == candidate){
+			continue;
+		}
+		isOccluded := false;
+		slopeN := candidate.Slope(neighbor);
+		distN := candidate.Distance(neighbor);
+		for _, occluder := range points {
+			if(occluder == neighbor || occluder == candidate){
+				continue;
+			}
+			slopeO := candidate.Slope(occluder);
+			if(math.Abs(float64(slopeN - slopeO)) <= slopeEpsilon){
+
+				if(math.Abs(float64((candidate.Distance(occluder) + neighbor.Distance(occluder)) - distN)) <= distEpsilon){
+					isOccluded = true;
+				}
+			}
+		}
+		if(!isOccluded){
+			res = append(res, neighbor);
+		}
+	}
+	return res;
+}
+
+func Filter(target *IntVec2, points []*IntVec2) []*IntVec2{
+	res := make([]*IntVec2, 0);
+	for _, candidate := range points {
+		if(candidate.X != target.X || candidate.Y != target.Y){
+			res = append(res, candidate);
+		}
+	}
+	return res;
+}
+
+
 
 func nthDigit(input *big.Int, n int64) int {
 	var quotient big.Int
