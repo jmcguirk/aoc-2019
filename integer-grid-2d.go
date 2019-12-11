@@ -2,7 +2,12 @@ package main
 
 import (
 	"errors"
+	"github.com/nfnt/resize"
+	"image"
+	"image/color"
+	"image/png"
 	"math"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -48,6 +53,49 @@ func (this *IntegerGrid2D) SetValue(x int, y int, value int) {
 	rowData[y] = value;
 }
 
+func (this *IntegerGrid2D) PrintToFile(fileName string, targetWidth int) {
+	xMin := this.MinRow();
+	xMax := this.MaxRow();
+
+	yMin := this.MinCol();
+	yMax := this.MaxCol();
+
+	padding := 2;
+
+	baseWidth := xMax - xMin;
+	baseHeight := yMax - yMin;
+
+	width := baseWidth + (padding*2);
+	height := baseHeight +  (padding*2);
+
+	upLeft := image.Point{0, 0}
+	lowRight := image.Point{width, height}
+
+	img := image.NewRGBA(image.Rectangle{upLeft, lowRight})
+
+	for x := 0; x < width; x++ {
+		for y := 0; y < width; y++ {
+			img.Set(x, y, color.White);
+		}
+	}
+
+
+	for j := yMin; j<= yMax; j++{
+		for i := xMin; i<= xMax; i++{
+			val := this.GetValue(i, j);
+			if(val > 0){
+				img.Set(i+padding, j+padding, color.Black);
+			}
+		}
+	}
+	// Encode
+	m := resize.Resize(uint(targetWidth), 0, img, resize.MitchellNetravali)
+	//as PNG.
+	f, _ := os.Create(fileName)
+	png.Encode(f, m)
+	Log.Info("Rendered grid image %s ", fileName);
+
+}
 
 func (this *IntegerGrid2D) Print() string {
 	xMin := this.MinRow();
@@ -57,23 +105,6 @@ func (this *IntegerGrid2D) Print() string {
 	yMax := this.MaxCol();
 
 	buff := "";
-	/*
-	for i := xMin; i<= xMax; i++{
-		for j := yMin; j<= yMax; j++{
-			if(!this.HasValue(i, j)){
-				buff += " ";
-			} else{
-				val := this.GetValue(i, j);
-				if(val > 0){
-					buff += strconv.Itoa(this.GetValue(i, j));
-				} else{
-					buff += " ";
-				}
-
-			}
-		}
-		buff += "\n";
-	}*/
 
 	for j := yMin; j<= yMax; j++{
 		for i := xMin; i<= xMax; i++{
