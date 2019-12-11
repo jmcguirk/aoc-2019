@@ -25,6 +25,7 @@ func (this *Problem11B) Solve() {
 		if(robot.IsComplete()){
 			Log.Info("Robot completed - work done %d", robot.WorkDone);
 			fileName := "artifacts/problem-11b.png"
+			//Log.Info("\n" + grid.Print());
 			grid.SetValue(0, 0, 0); // Clean up origin
 			grid.PrintToFile(fileName, 512);
 			//Log.Info("\n" + grid.Print());

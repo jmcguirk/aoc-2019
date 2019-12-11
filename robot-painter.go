@@ -71,6 +71,9 @@ func (this *RobotPainter) Step() error{
 	Log.Info("[Step %d] Painter Robot %s beginning step at %s facing %s. Work Done - %d", this.StepCount, this.Id, this.Position.ToString(), PrintOrientation(this.Orientation), this.WorkDone);
 	this.ReadCurrentColor();
 	color, err := this.ReadOutput();
+	if(this.IsComplete()){
+		return nil;
+	}
 	if(err != nil){
 		return err;
 	}

@@ -105,7 +105,6 @@ func (this *IntegerGrid2D) Print() string {
 	yMax := this.MaxCol();
 
 	buff := "";
-
 	for j := yMin; j<= yMax; j++{
 		for i := xMin; i<= xMax; i++{
 			if(!this.HasValue(i, j)){
@@ -117,11 +116,11 @@ func (this *IntegerGrid2D) Print() string {
 				} else{
 					buff += " ";
 				}
-
 			}
 		}
 		buff += "\n";
 	}
+	//Log.Info("Furthest point is %d,%d", furthestX, furthestY);
 
 	return buff;
 }
