@@ -60,7 +60,7 @@ func (this *IntegerGrid2D) PrintToFile(fileName string, targetWidth int) {
 	yMin := this.MinCol();
 	yMax := this.MaxCol();
 
-	padding := 2;
+	padding := 3;
 
 	baseWidth := xMax - xMin;
 	baseHeight := yMax - yMin;
@@ -75,7 +75,7 @@ func (this *IntegerGrid2D) PrintToFile(fileName string, targetWidth int) {
 
 	for x := 0; x < width; x++ {
 		for y := 0; y < width; y++ {
-			img.Set(x, y, color.White);
+			img.Set(x, y, color.Black);
 		}
 	}
 
@@ -84,7 +84,7 @@ func (this *IntegerGrid2D) PrintToFile(fileName string, targetWidth int) {
 		for i := xMin; i<= xMax; i++{
 			val := this.GetValue(i, j);
 			if(val > 0){
-				img.Set(i+padding, j+padding, color.Black);
+				img.Set(i+padding, j+padding, color.White);
 			}
 		}
 	}
