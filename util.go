@@ -70,6 +70,10 @@ func (this *IntVec2) Angle (other *IntVec2) float32{
 	//atan2(y2 - y1, x2 - x1) * 180 / PI;
 }
 
+func (this *IntVec2) ToString () string{
+	return "[X:" + strconv.Itoa(this.X) + ",Y:" + strconv.Itoa(this.Y) + "]";
+}
+
 func (this *IntVec2) GetVisiblePoints(points []*IntVec2) []*IntVec2{
 	res := make([]*IntVec2, 0);
 	candidate := this;
@@ -206,4 +210,21 @@ func IsEQ(registersA []int, registersB []int) bool {
 		}
 	}
 	return true;
+}
+
+const OrientationNorth = 0;
+const OrientationEast = 1;
+const OrientationSouth = 2;
+const OrientationWest = 3;
+
+func PrintOrientation(val int) string {
+	switch (val) {
+		case OrientationEast:
+			return "E";
+		case OrientationSouth:
+			return "S";
+		case OrientationWest:
+			return "W";
+	}
+	return "N";
 }

@@ -63,7 +63,7 @@ func (this *IntcodeMachineV3) Load(fileName string) error {
 	this.InputQueue = make([]int64, 0);
 
 
-	Log.Info("Finished parsing machine initial state - %d registers", len(this.Registers));
+	//Log.Info("Finished parsing machine initial state - %d registers", len(this.Registers));
 
 	return nil;
 }

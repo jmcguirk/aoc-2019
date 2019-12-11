@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -48,6 +49,98 @@ func (this *IntegerGrid2D) SetValue(x int, y int, value int) {
 }
 
 
+func (this *IntegerGrid2D) Print() string {
+	xMin := this.MinRow();
+	xMax := this.MaxRow();
+
+	yMin := this.MinCol();
+	yMax := this.MaxCol();
+
+	buff := "";
+	/*
+	for i := xMin; i<= xMax; i++{
+		for j := yMin; j<= yMax; j++{
+			if(!this.HasValue(i, j)){
+				buff += " ";
+			} else{
+				val := this.GetValue(i, j);
+				if(val > 0){
+					buff += strconv.Itoa(this.GetValue(i, j));
+				} else{
+					buff += " ";
+				}
+
+			}
+		}
+		buff += "\n";
+	}*/
+
+	for j := yMin; j<= yMax; j++{
+		for i := xMin; i<= xMax; i++{
+			if(!this.HasValue(i, j)){
+				buff += " ";
+			} else{
+				val := this.GetValue(i, j);
+				if(val > 0){
+					buff += strconv.Itoa(this.GetValue(i, j));
+				} else{
+					buff += " ";
+				}
+
+			}
+		}
+		buff += "\n";
+	}
+
+	return buff;
+}
+
+func (this *IntegerGrid2D) MaxRow() int {
+	res := math.MinInt32;
+	for x, _ := range this.Data{
+		if(x > res){
+			res = x;
+		}
+	}
+	return res;
+}
+
+func (this *IntegerGrid2D) MinRow() int {
+	res := math.MaxInt32;
+	for x, _ := range this.Data{
+		if(x < res){
+			res = x;
+		}
+	}
+	return res;
+}
+
+func (this *IntegerGrid2D) MaxCol() int {
+	res := math.MinInt32;
+	for _, vals := range this.Data{
+		for y, _ := range *vals{
+			if(y > res){
+				res = y;
+			}
+		}
+	}
+	return res;
+}
+
+func (this *IntegerGrid2D) MinCol() int {
+	res := math.MaxInt32;
+	for _, vals := range this.Data{
+		for y, _ := range *vals{
+			if(y < res){
+				res = y;
+			}
+		}
+	}
+	return res;
+}
+
+
+
 func (this *IntegerGrid2D) GetValue(x int, y int) int {
 	_, exists := this.Data[x];
 	if(!exists){
@@ -60,6 +153,20 @@ func (this *IntegerGrid2D) GetValue(x int, y int) int {
 	}
 	return rowData[y];
 }
+
+func (this *IntegerGrid2D) HasValue(x int, y int) bool {
+	_, exists := this.Data[x];
+	if(!exists){
+		return false;
+	}
+	rowData := *this.Data[x];
+	_, exists = rowData[y];
+	if(!exists){
+		return false;
+	}
+	return true;
+}
+
 
 type TwistyLine struct {
 	Id  			int;

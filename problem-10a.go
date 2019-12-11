@@ -63,10 +63,7 @@ func (this *Problem10A) Solve() {
 					continue;
 				}
 				slopeO := candidate.Slope(occluder);
-
-
 				if(math.Abs(float64(slopeN - slopeO)) <= slopeEpsilon){
-
 					if(math.Abs(float64((candidate.Distance(occluder) + neighbor.Distance(occluder)) - distN)) <= distEpsilon){
 						isOccluded = true;
 					}
