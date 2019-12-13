@@ -19,6 +19,8 @@ type IntcodeMachineV3 struct {
 	HasHalted bool;
 	PauseOnOutput bool;
 	RelativeBase int64;
+	PauseOnInput bool;
+	PendingInput bool;
 }
 
 
@@ -27,7 +29,7 @@ type IntcodeMachineV3 struct {
 
 
 func (this *IntcodeMachineV3) QueueInput(val int64) {
-	Log.Info("Queuing input value %d", val);
+	//Log.Info("Queuing input value %d", val);
 	this.InputQueue = append(this.InputQueue, val);
 }
 
@@ -67,6 +69,18 @@ func (this *IntcodeMachineV3) Load(fileName string) error {
 
 	return nil;
 }
+
+func (this *IntcodeMachineV3) ReadNextOutput() (int64, error, bool) {
+	err := this.Execute();
+	if(err != nil){
+		return -1, err, false;
+	}
+	if(this.HasHalted){
+		return -1, nil, true;
+	}
+	return this.LastOutputValue.Int64(), nil, false;
+}
+
 
 func (this *IntcodeMachineV3) Reset() {
 	//Log.Info("Performing reset");
@@ -112,6 +126,12 @@ func (this *IntcodeMachineV3) Execute() error {
 			}
 			break;
 		case IntCodeOpCodeInput:
+			if(this.PauseOnInput && len(this.InputQueue) < 0){
+				Log.Info("Pausing for input");
+				this.PendingInput = true;
+				return nil;
+			}
+			this.PendingInput = false;
 			err := this.ExecuteInput(instruction);
 			if(err != nil){
 				return err;
