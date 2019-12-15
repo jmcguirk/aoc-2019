@@ -217,6 +217,11 @@ const OrientationEast = 1;
 const OrientationSouth = 2;
 const OrientationWest = 3;
 
+const DirectionNorth = 1;
+const DirectionSouth = 2;
+const DirectionWest = 3;
+const DirectionEast = 4;
+
 func PrintOrientation(val int) string {
 	switch (val) {
 		case OrientationEast:
@@ -255,4 +260,27 @@ func LCM(a, b int64, integers ...int64) int64 {
 	}
 
 	return result
+}
+
+func (this *IntVec2) Clone() *IntVec2 {
+	res := &IntVec2{};
+	res.X = this.X;
+	res.Y = this.Y;
+	return res;
+}
+
+const TileIndexSize = 1000;
+const TileIndexOffset = 50000;
+
+func (this *IntVec2) TileIndex() int {
+	return (this.X + TileIndexSize) + ((this.Y + TileIndexSize) * TileIndexOffset);
+}
+
+func (this *IntVec2) FromTileIndex(tileIndex int) {
+	this.Y = (tileIndex/TileIndexOffset)-TileIndexSize;
+	this.X = (tileIndex%TileIndexOffset)-TileIndexSize;
+}
+
+func (this *IntVec2) Eq(that *IntVec2) bool {
+	return this.X == that.X && this.Y == that.Y;
 }

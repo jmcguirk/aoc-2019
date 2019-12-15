@@ -6,8 +6,10 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"log"
 	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -305,5 +307,135 @@ func (this *TwistyLine) Apply(grid *IntegerGrid2D) []*IntVec2  {
 			}
 		}
 	}
+	return res;
+}
+
+func (this *IntegerGrid2D) TileIndex(X int, Y int) int {
+	return (X + TileIndexSize) + ((Y + TileIndexSize) * TileIndexOffset);
+}
+
+func (this *IntegerGrid2D) FromTileIndex(tileIndex int) (int, int) {
+	y := (tileIndex/TileIndexOffset)-TileIndexSize;
+	x := (tileIndex%TileIndexOffset)-TileIndexSize;
+	return y, x;
+}
+
+func (this *IntegerGrid2D) GenerateEdges(from *IntVec2) []*IntVec2 {
+	res := make([]*IntVec2, 0);
+	north := from.Clone();
+	north.Y--;
+	res = append(res, north);
+
+	south := from.Clone();
+	south.Y++;
+	res = append(res, south);
+
+	east := from.Clone();
+	east.X++;
+	res = append(res, east);
+
+	west := from.Clone();
+	west.X--;
+	res = append(res, west);
+
+	return res;
+}
+
+func (this *IntegerGrid2D) ShortestPath(from *IntVec2, to *IntVec2, blockValue int) []*IntVec2 {
+
+	//Log.Info("Requesting path from %s to %s", from.ToString(), to.ToString());
+	res := make([]*IntVec2, 0);
+
+	visitedNodes := &IntegerGrid2D{};
+	visitedNodes.Init();
+	minCostToStart := &IntegerGrid2D{};
+	minCostToStart.Init();
+
+	nearestToStart := make(map[int]int);
+
+	frontier := make([]*IntVec2, 0);
+	frontier = append(frontier, from);
+	frontierMap := make(map[int]int);
+	frontierMap[from.TileIndex()] = 1;
+
+	minCostToStart.SetValue(from.X, from.Y, 1);
+
+	for {
+		if (len(frontier) <= 0) {
+			break;
+		}
+		sort.SliceStable(frontier, func(i, j int) bool {
+			vI := frontier[i];
+			vJ := frontier[j];
+			return minCostToStart.GetValue(vI.X, vI.Y) < minCostToStart.GetValue(vJ.X, vJ.Y);
+		});
+
+		next := frontier[0];
+		frontier = frontier[1:];
+		delete(frontierMap, next.TileIndex());
+		costToHere := minCostToStart.GetValue(next.X, next.Y);
+		edges := this.GenerateEdges(next);
+		for _, edge := range edges{
+			if(visitedNodes.HasValue(edge.X, edge.Y)){
+				continue;
+			}
+			if(!this.HasValue(edge.X, edge.Y)){
+				continue;
+			}
+			if(this.GetValue(edge.X, edge.Y) == blockValue){
+				continue;
+			}
+			bestToHere := int(math.MaxInt32);
+
+			bestCostExists := minCostToStart.HasValue(edge.X, edge.Y);
+			if(bestCostExists){
+				bestToHere = minCostToStart.GetValue(edge.X, edge.Y);
+			}
+
+			if(costToHere + 1 < bestToHere){
+				minCostToStart.SetValue(edge.X, edge.Y, costToHere + 1);
+				//Log.Info("Point %d to %d", edge.TileIndex(), next.TileIndex());
+				nearestToStart[edge.TileIndex()] = next.TileIndex();
+				//minCostToStart[neighbor.Id] = costToHere + edge.Weight;
+				//nearestToStart[neighbor.Id] = next;
+				_, alreadyEnqueued := frontierMap[edge.TileIndex()];
+				if(!alreadyEnqueued){
+					frontierMap[edge.TileIndex()] = 1;
+					frontier = append(frontier, edge);
+				}
+			}
+
+		}
+		visitedNodes.SetValue(next.X, next.Y, 1);
+		if(next.TileIndex() == to.TileIndex()){
+			break;
+		}
+	}
+
+	if(!minCostToStart.HasValue(to.X, to.Y)){
+		// No path exists
+		return nil;
+	}
+
+	//Log.Info("Done %d", from.TileIndex());
+	nextPathStep := to.TileIndex();
+
+	for {
+		next := nearestToStart[nextPathStep];
+		if(next == 0){
+			log.Fatal("exit");
+		}
+		//Log.Info("Check %d to %d", nextPathStep, next);
+		if(next == from.TileIndex()){
+			break;
+		}
+		nextPathStep = next;
+		node := &IntVec2{};
+		node.FromTileIndex(next);
+		res = append(res, node);
+	}
+
+	ReverseSlice(res);
+	res = append(res, to);
 	return res;
 }
