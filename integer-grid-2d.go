@@ -22,6 +22,23 @@ func (this *IntegerGrid2D) Init() {
 	this.Data = make(map[int]*map[int]int);
 }
 
+func (this *IntegerGrid2D) Clone() *IntegerGrid2D {
+	res := &IntegerGrid2D{};
+	res.Init();
+
+
+	for k, v := range this.Data{
+		cpy := make(map[int]int);
+		for j, v2 := range *v{
+			cpy[j] = v2;
+		}
+		res.Data[k] = &cpy;
+	}
+
+	return res;
+}
+
+
 func (this *IntegerGrid2D) Visit(x int, y int) int {
 	_, exists := this.Data[x];
 	if(!exists){

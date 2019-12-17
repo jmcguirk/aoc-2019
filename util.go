@@ -284,3 +284,14 @@ func (this *IntVec2) FromTileIndex(tileIndex int) {
 func (this *IntVec2) Eq(that *IntVec2) bool {
 	return this.X == that.X && this.Y == that.Y;
 }
+
+func AllSubstrings(val string, n int) []string{
+	res := make([]string, 0);
+	for len := 1; len <= n; len++{
+		for i := 0; i <= n - len; i++{
+			j := i + len - 1;
+			res = append(res, val[i:j]);
+		}
+	}
+	return res;
+}
