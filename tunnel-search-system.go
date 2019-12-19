@@ -146,7 +146,9 @@ func (this *TunnelSearchSystem) Init(gridFile string) error {
 		y ++;
 	}
 
-	Log.Info("Parse finished - %d keys, %d doors - start position is %d, %d", len(this.AllKeys), len(this.Doors), this.StartPos.X, this.StartPos.Y);
+
+
+	Log.Info("Parse finished - %d keys, %d doors - ", len(this.AllKeys), len(this.Doors), this.StartPos.X, this.StartPos.Y);
 
 	for _, k := range this.AllKeys{
 		_, exists := this.Doors[k.KeyCode-TunnelKeyCaseOffset];
@@ -217,7 +219,7 @@ func (this *TunnelSearchSystem) FindShortestPath() int {
 	//heldKeys := make([]int, 0);
 	//this.BestPath = int(math.MaxInt64);
 	operationDone := make(chan bool)
-	this.BestPath = 5072; // LNG
+	this.BestPath = 5068; // LNG
 	for key, path := range initiallyReachableKeys {
 		newHeld := make([]int, 0);
 		newHeld = append(newHeld, key);

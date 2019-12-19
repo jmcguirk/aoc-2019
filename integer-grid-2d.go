@@ -358,6 +358,156 @@ func (this *IntegerGrid2D) GenerateEdges(from *IntVec2) []*IntVec2 {
 	return res;
 }
 
+func (this *IntegerGrid2D) ShortestPathWithBlacklist(from *IntVec2, to *IntVec2, blockValue []int) []*IntVec2 {
+
+	//Log.Info("Requesting path from %s to %s", from.ToString(), to.ToString());
+	res := make([]*IntVec2, 0);
+
+	visitedNodes := &IntegerGrid2D{};
+	visitedNodes.Init();
+	minCostToStart := &IntegerGrid2D{};
+	minCostToStart.Init();
+
+	nearestToStart := make(map[int]int);
+
+	frontier := make([]*IntVec2, 0);
+	frontier = append(frontier, from);
+	frontierMap := make(map[int]int);
+	frontierMap[from.TileIndex()] = 1;
+
+	minCostToStart.SetValue(from.X, from.Y, 1);
+
+	for {
+		if (len(frontier) <= 0) {
+			break;
+		}
+		sort.SliceStable(frontier, func(i, j int) bool {
+			vI := frontier[i];
+			vJ := frontier[j];
+			return minCostToStart.GetValue(vI.X, vI.Y) < minCostToStart.GetValue(vJ.X, vJ.Y);
+		});
+
+		next := frontier[0];
+		frontier = frontier[1:];
+		delete(frontierMap, next.TileIndex());
+		costToHere := minCostToStart.GetValue(next.X, next.Y);
+		edges := this.GenerateEdges(next);
+		for _, edge := range edges{
+			if(visitedNodes.HasValue(edge.X, edge.Y)){
+				continue;
+			}
+			if(!this.HasValue(edge.X, edge.Y)){
+				continue;
+			}
+			val := this.GetValue(edge.X, edge.Y);
+			isBlackListed := false;
+			for _, v := range blockValue{
+				if(v == val){
+					isBlackListed = true;
+					break;
+				}
+			}
+			if(isBlackListed){
+				continue;
+			}
+			bestToHere := int(math.MaxInt32);
+
+			bestCostExists := minCostToStart.HasValue(edge.X, edge.Y);
+			if(bestCostExists){
+				bestToHere = minCostToStart.GetValue(edge.X, edge.Y);
+			}
+
+			if(costToHere + 1 < bestToHere){
+				minCostToStart.SetValue(edge.X, edge.Y, costToHere + 1);
+				//Log.Info("Point %d to %d", edge.TileIndex(), next.TileIndex());
+				nearestToStart[edge.TileIndex()] = next.TileIndex();
+				//minCostToStart[neighbor.Id] = costToHere + edge.Weight;
+				//nearestToStart[neighbor.Id] = next;
+				_, alreadyEnqueued := frontierMap[edge.TileIndex()];
+				if(!alreadyEnqueued){
+					frontierMap[edge.TileIndex()] = 1;
+					frontier = append(frontier, edge);
+				}
+			}
+
+		}
+		visitedNodes.SetValue(next.X, next.Y, 1);
+		if(next.TileIndex() == to.TileIndex()){
+			break;
+		}
+	}
+
+	if(!minCostToStart.HasValue(to.X, to.Y)){
+		// No path exists
+		return nil;
+	}
+
+	//Log.Info("Done %d", from.TileIndex());
+	nextPathStep := to.TileIndex();
+
+	for {
+		next := nearestToStart[nextPathStep];
+		if(next == 0){
+			log.Fatal("exit");
+		}
+		//Log.Info("Check %d to %d", nextPathStep, next);
+		if(next == from.TileIndex()){
+			break;
+		}
+		nextPathStep = next;
+		node := &IntVec2{};
+		node.FromTileIndex(next);
+		res = append(res, node);
+	}
+
+	ReverseSlice(res);
+	res = append(res, to);
+	return res;
+}
+
+func (this *IntegerGrid2D) Reachable(from *IntVec2, blockValue int) []*IntVec2 {
+
+	res := make([]*IntVec2, 0);
+	visitedNodes := &IntegerGrid2D{};
+	visitedNodes.Init();
+
+	frontier := make([]*IntVec2, 0);
+	frontier = append(frontier, from);
+	frontierMap := make(map[int]int);
+	frontierMap[from.TileIndex()] = 1;
+
+	res = append(res, from)
+
+	for {
+		if (len(frontier) <= 0) {
+			break;
+		}
+		next := frontier[0];
+		frontier = frontier[1:];
+		delete(frontierMap, next.TileIndex());
+		edges := this.GenerateEdges(next);
+		for _, edge := range edges {
+			if(visitedNodes.HasValue(edge.X, edge.Y)){
+				continue;
+			}
+			if(!this.HasValue(edge.X, edge.Y)){
+				continue;
+			}
+			if(this.GetValue(edge.X, edge.Y) == blockValue){
+				continue;
+			}
+			visitedNodes.SetValue(edge.X, edge.Y, 1);
+			res = append(res, edge);
+			_, alreadyEnqueued := frontierMap[edge.TileIndex()];
+			if(!alreadyEnqueued){
+				frontierMap[edge.TileIndex()] = 1;
+				frontier = append(frontier, edge);
+			}
+		}
+	}
+	return res;
+}
+
 func (this *IntegerGrid2D) ShortestPath(from *IntVec2, to *IntVec2, blockValue int) []*IntVec2 {
 
 	//Log.Info("Requesting path from %s to %s", from.ToString(), to.ToString());
