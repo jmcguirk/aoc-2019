@@ -190,6 +190,52 @@ func (this *IntegerGrid2D) MinCol() int {
 
 
 
+func (this *IntegerGrid2D) MaxX() int {
+	res := math.MinInt32;
+	for x, _ := range this.Data{
+		if(x > res){
+			res = x;
+		}
+	}
+	return res;
+}
+
+func (this *IntegerGrid2D) MinX() int {
+	res := math.MaxInt32;
+	for x, _ := range this.Data{
+		if(x < res){
+			res = x;
+		}
+	}
+	return res;
+}
+
+func (this *IntegerGrid2D) MaxY() int {
+	res := math.MinInt32;
+	for _, vals := range this.Data{
+		for y, _ := range *vals{
+			if(y > res){
+				res = y;
+			}
+		}
+	}
+	return res;
+}
+
+func (this *IntegerGrid2D) MinY() int {
+	res := math.MaxInt32;
+	for _, vals := range this.Data{
+		for y, _ := range *vals{
+			if(y < res){
+				res = y;
+			}
+		}
+	}
+	return res;
+}
+
+
+
 func (this *IntegerGrid2D) GetValue(x int, y int) int {
 	_, exists := this.Data[x];
 	if(!exists){
