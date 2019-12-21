@@ -1,8 +1,9 @@
-OR A T
-AND B T
-AND C T
-NOT T T
-AND D T
-OR E J
-OR H J
+// Strategy - Jump if there is a atleast 1 hole in the next 3 tiles, we can land safely - and we do not see ground tiles in E or H (indicating we should hold)
+OR A T // Is there ground in A
+AND B T // and is there ground in B
+AND C T // and is there ground in C
+NOT T T // True if there is a hole in one of the next 3 tiles
+AND D T // Can we land if we jumped here? - screwed if !A
+OR E J // Look forward ground tiles in either of these spots.
+OR H J  // If ground exists in neither - then we need to hold
 AND T J
