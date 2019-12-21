@@ -196,7 +196,7 @@ func (this *IntcodeMachineV3) ExpandRegisters(destPos int64) {
 		if(int64(len(this.Registers)) > destPos){
 			break;
 		}
-		Log.Info("expanding registers to %d", len(this.Registers) * 2);
+		//Log.Info("expanding registers to %d", len(this.Registers) * 2);
 		this.Registers = append(this.Registers, make([]*big.Int, len(this.Registers))...);
 	}
 
