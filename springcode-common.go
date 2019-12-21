@@ -28,7 +28,7 @@ type SpringCodeAND struct{
 func (this *SpringCodeAND) Parse(lineRaw string, lineNum int) error {
 	line := strings.TrimSpace(lineRaw);
 	lineParts := strings.Split(line, " ");
-	if(len(lineParts) != 3){
+	if(len(lineParts) < 3){
 		return errors.New("Unexpected length " + strconv.Itoa(len(lineParts)));
 	}
 	if(len(lineParts[1]) != 1){
@@ -96,7 +96,7 @@ func (this *SpringCodeOR) SerializeToInput(processor *SpringCodeProcessor) {
 func (this *SpringCodeOR) Parse(lineRaw string, lineNum int) error {
 	line := strings.TrimSpace(lineRaw);
 	lineParts := strings.Split(line, " ");
-	if(len(lineParts) != 3){
+	if(len(lineParts) < 3){
 		return errors.New("Unexpected length " + strconv.Itoa(len(lineParts)));
 	}
 	if(len(lineParts[1]) != 1){
@@ -123,7 +123,7 @@ type SpringCodeNOT struct{
 func (this *SpringCodeNOT) Parse(lineRaw string, lineNum int) error {
 	line := strings.TrimSpace(lineRaw);
 	lineParts := strings.Split(line, " ");
-	if(len(lineParts) != 3){
+	if(len(lineParts) < 3){
 		return errors.New("Unexpected length " + strconv.Itoa(len(lineParts)));
 	}
 	if(len(lineParts[1]) != 1){

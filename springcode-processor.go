@@ -79,6 +79,7 @@ func (this *SpringCodeProcessor) LoadProgram(instructionFile string) error {
 		trimmed := strings.TrimSpace(val);
 		if(trimmed != ""){
 			lineParts := strings.Split(trimmed, " ");
+
 			opCode := lineParts[0];
 			var instruction SpringCodeInstruction;
 			switch(opCode){
@@ -91,6 +92,8 @@ func (this *SpringCodeProcessor) LoadProgram(instructionFile string) error {
 				case SpringCodeOpOr:
 					instruction = &SpringCodeOR{};
 					break;
+				case "//": // Comment
+					continue;
 				default:
 					return errors.New("Unknown opcode " + opCode + " at line num " + strconv.Itoa(lineNum));
 			}
