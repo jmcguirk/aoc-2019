@@ -35,6 +35,14 @@ func (this *SpringCodeProcessor) SetBeginExecutionKeyword(word string){
 	this.BeginExecutionKeyword = word;
 }
 
+
+func (this *SpringCodeProcessor) ExecuteRawProgram(instructions []SpringCodeInstruction) (error, []int) {
+	this.Program = instructions;
+	this.CurrentProgram = "Custom Program";
+	this.Processor.Reset();
+	return this.ExecuteLoadedProgram()
+}
+
 func (this *SpringCodeProcessor) ExecuteLoadedProgram() (error, []int) {
 	for _, instruction := range this.Program {
 		instruction.SerializeToInput(this);

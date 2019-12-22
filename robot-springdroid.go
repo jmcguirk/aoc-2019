@@ -49,6 +49,22 @@ func (this *RobotSpringDroid) Execute(run bool) error {
 	return nil;
 }
 
+func (this *RobotSpringDroid) ExecuteRaw(instructions []SpringCodeInstruction) (bool, error) {
+	err, out := this.Processor.ExecuteRawProgram(instructions);
+	if(err != nil){
+		return false, err;
+	}
+	if(len(out) > 1){
+		for _, v := range out{
+			if(v > unicode.MaxASCII){
+				return true, nil;
+			}
+		}
+	}
+
+	return false, nil;
+}
+
 func (this *RobotSpringDroid) RenderOutput(output []int) string {
 	var str strings.Builder;
 	for _, v := range output{

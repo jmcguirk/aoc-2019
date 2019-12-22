@@ -158,3 +158,29 @@ func (this *SpringCodeNOT) SerializeToInput(processor *SpringCodeProcessor) {
 	processor.EnqueueRawInput(this.Register2);
 	processor.EnqueueRawInput(AsciiNewLine);
 }
+
+type SpringCodeRun struct{
+
+}
+
+func (this *SpringCodeRun) Parse(lineRaw string, lineNum int) error {
+
+	return nil;
+}
+
+func (this *SpringCodeRun) GetLineNum() int {
+	return 0;
+}
+
+
+func (this *SpringCodeRun) ToString() string {
+	return fmt.Sprintf("RUN");
+}
+
+
+func (this *SpringCodeRun) SerializeToInput(processor *SpringCodeProcessor) {
+	processor.EnqueueRawInput(AsciiR);
+	processor.EnqueueRawInput(AsciiU);
+	processor.EnqueueRawInput(AsciiN);
+	processor.EnqueueRawInput(AsciiNewLine);
+}

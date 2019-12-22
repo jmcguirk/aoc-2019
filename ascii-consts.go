@@ -8,6 +8,7 @@ const AsciiN = int('N');
 const AsciiO = int('O');
 const AsciiR = int('R');
 const AsciiT = int('T');
+const AsciiU = int('U');
 const AsciiW = int('W');
 
 const AsciiSpace = 32;
