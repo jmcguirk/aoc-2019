@@ -7,11 +7,11 @@ type Problem22B struct {
 func (this *Problem22B) Solve() {
 	Log.Info("Problem 22B solver beginning!")
 
-	exploreValue := 10007;
-	//exploreValue := 10;
+	deckSize := 119315717514047;
+	iterationCount := 101741582076661;
 
 	deck := &Deck{};
-	deck.InitSlim(exploreValue);
+	deck.InitSlim(deckSize);
 
 	instructions, err := deck.ParseShuffleInstructionSet("source-data/input-day-22b.txt");
 	if(err != nil){
@@ -22,14 +22,21 @@ func (this *Problem22B) Solve() {
 
 	//cardOfInterest := 2019;
 	//index should be 4684
-	cardOfInterest := 4684;
+	cardOfInterest := 2020;
 
 	composite := &DeckOperationComposite{};
 	composite.CompressInverse(instructions, deck);
 	Log.Info("Finished compressing operations y = %dx+%d", composite.M, composite.B);
 	deck.SetCardOfInterest(cardOfInterest);
-	composite.ApplySlim(deck);
+	// Incorrect answers 90444333371210
+	// Incorrect answers 70053774363234 - too high
+	// Incorrect answers 64470772223464 - too high
+	// 					 11061385851898 - Unknown
+	//					 112201712869651 - Unknown
+	//					 51481617374172 - Unknown
+	composite.ApplyMulti(deck, iterationCount);
+	//composite.ApplySlim(deck);
 
-	Log.Info("Applied compressed instructions card of interest %d is at position %d", deck.CardOfInterest, deck.CardOfInterestIndex);
+	Log.Info("Applied inverse compressed instructions. We are interested in slot %d which has value %d", cardOfInterest, deck.CardOfInterestIndex);
 }
 

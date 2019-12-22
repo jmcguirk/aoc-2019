@@ -411,6 +411,51 @@ func (this *DeckOperationComposite) ApplySlim(deck *Deck){
 	deck.CardOfInterestIndex = int(x.Int64());
 }
 
+func (this *DeckOperationComposite) ApplyMulti(deck *Deck, count int){
+
+	x := big.NewInt(int64(deck.CardOfInterestIndex));
+	Log.Info("We are interested in %d with iterations %d deck size is %d", x, count, deck.Size);
+
+	mod := big.NewInt(int64(deck.Size));
+
+	// m = m^count % mod
+	m := new(big.Int);
+	m.Set(this.M);
+	m = m.Exp(m, big.NewInt(int64(count)), mod);
+
+
+	b := new(big.Int);
+	b.Set(this.B);
+
+
+	// Use a geometric series to expand the offset
+	tmp := big.NewInt(1);
+	tmp = tmp.Sub(tmp, m);
+	b = b.Mul(b, tmp);
+
+	tmp = big.NewInt(1);
+	tmp = tmp.Sub(tmp, this.M);
+	tmp = tmp.Mod(tmp, mod);
+	tmp = tmp.Exp(tmp, big.NewInt(int64(deck.Size - 2)), mod);
+
+	b = b.Mul(b, tmp);
+	b = b.Mod(b, mod);
+
+
+	x = x.Mul(x, m);
+	x = x.Mod(x, mod);
+
+	x = x.Add(x, b);
+
+	x = x.Mod(x, mod);
+
+	deck.CardOfInterestIndex = int(x.Int64());
+}
+
+func (this *DeckOperationComposite) ApplyMultiRecur(deck *Deck, count int){
+
+}
+
 func (this *DeckOperationComposite) Accumulate(op *DeckOperationComposite, inverse bool, deck *Deck){
 	op.M = this.M;
 	op.B = this.B;
