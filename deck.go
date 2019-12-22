@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"math/big"
 	"strconv"
 	"strings"
 )
@@ -104,6 +106,7 @@ func (this *Deck) ParseShuffleInstructionSet(fileName string) ([]DeckOperation, 
 					case DeckOperationResetOpCode:
 						instruction = &DeckOperationReset{};
 						break;
+					case "Result:" :
 					case "//": // Comment
 						continue;
 				default:
@@ -251,6 +254,7 @@ type DeckOperation interface {
 	Parse(line string, lineNum int) error;
 	Apply(deck *Deck);
 	ApplySlim(deck *Deck);
+	Accumulate(composite *DeckOperationComposite, inv bool, deck *Deck);
 }
 
 type DeckOperationDealToNewStack struct {
@@ -358,4 +362,106 @@ func (this *DeckOperationReset) Apply(deck *Deck){
 }
 func (this *DeckOperationReset) ApplySlim(deck *Deck){
 	deck.ResetSlim();
+}
+
+
+// Represents a linear accumulation of operations
+type DeckOperationComposite struct {
+	LineNum int;
+	M *big.Int;
+	B *big.Int;
+}
+
+func (this *DeckOperationComposite) ToString() string{
+	return fmt.Sprintf("%d - composite", this.LineNum);
+}
+
+func (this *DeckOperationComposite) Parse(line string, lineNum int) error{
+	return nil;
+}
+
+func (this *DeckOperationComposite) Apply(deck *Deck){
+	log.Fatal("Not implemented");
+}
+
+func (this *DeckOperationComposite) Compress(operations []DeckOperation, deck *Deck){
+	this.M = big.NewInt(1);
+	this.B = big.NewInt(0);
+	for _, op := range operations{
+		op.Accumulate(this, false, deck);
+	}
+}
+
+func (this *DeckOperationComposite) CompressInverse(operations []DeckOperation, deck *Deck){
+	this.M = big.NewInt(1);
+	this.B = big.NewInt(0);
+
+	for _, op := range operations{
+		op.Accumulate(this, true, deck);
+	}
+}
+
+func (this *DeckOperationComposite) ApplySlim(deck *Deck){
+
+	// y = mx + b;
+	x := big.NewInt(int64(deck.CardOfInterestIndex));
+	x = x.Mul(x, this.M);
+	x = x.Add(x, this.B);
+	x = x.Mod(x, big.NewInt(int64(deck.Size)));
+	deck.CardOfInterestIndex = int(x.Int64());
+}
+
+func (this *DeckOperationComposite) Accumulate(op *DeckOperationComposite, inverse bool, deck *Deck){
+	op.M = this.M;
+	op.B = this.B;
+}
+
+func (this *DeckOperationCut) Accumulate(op *DeckOperationComposite, inverse bool, deck *Deck){
+	if(!inverse){
+		// This shifts the ultimate destination of the position by the cut amount
+		// M is unchanged with a cut - it's purely an offset operation
+		op.B = op.B.Sub(op.B, big.NewInt(int64(this.CutAmount)));
+	} else{
+		// "Unshift the positional offset"
+		v := big.NewInt(int64(this.CutAmount));
+		v = v.Mul(op.M, v);
+		v = v.Mod(v, big.NewInt(int64(deck.Size)));
+		op.B = op.B.Add(op.B, v);
+	}
+	op.ModAll(deck);
+}
+
+func (this *DeckOperationDeal) Accumulate(op *DeckOperationComposite, inverse bool, deck *Deck){
+	if(!inverse){
+		op.M = op.M.Mul(op.M, big.NewInt(int64(this.DealAmount))); // This operation effectively multiplies our final position by the provided value
+		op.B = op.B.Mul(op.B, big.NewInt(int64(this.DealAmount)));	// Including any offset accumulated
+	} else{
+
+		 v := big.NewInt(int64(this.DealAmount)); // This acts like a quasi "division under modulus" to reverse this operation
+		 v = v.ModInverse(v, big.NewInt(int64(deck.Size)));
+		 op.M = op.M.Mul(op.M, v);
+	}
+	op.ModAll(deck);
+}
+
+func (this *DeckOperationDealToNewStack) Accumulate(op *DeckOperationComposite, inverse bool, deck *Deck){
+	// We ignore inversing since this is an identical operation
+	op.M = op.M.Mul(op.M, big.NewInt(-1)); // This effectively reverses the ultimate position
+	//op.ModAll(deck);
+	if(!inverse){
+		op.B = op.B.Mul(op.B, big.NewInt(-1));
+		op.B = op.B.Add(op.B, big.NewInt(int64(deck.Size - 1))); // And offsets the position by the size minus its current position
+	}  else{
+		op.B = op.B.Add(op.B, op.M);
+	}
+	op.ModAll(deck);
+}
+
+func (this *DeckOperationComposite) ModAll(deck *Deck){
+	this.M = this.M.Mod(this.M, big.NewInt(int64(deck.Size)));
+	this.B = this.B.Mod(this.B, big.NewInt(int64(deck.Size)));
+}
+
+func (this *DeckOperationReset) Accumulate(op *DeckOperationComposite, inverse bool, deck *Deck){
+	log.Fatal("Not implemented")
 }

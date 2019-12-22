@@ -7,7 +7,7 @@ type Problem22B struct {
 func (this *Problem22B) Solve() {
 	Log.Info("Problem 22B solver beginning!")
 
-	exploreValue := 79357;
+	exploreValue := 10007;
 	//exploreValue := 10;
 
 	deck := &Deck{};
@@ -20,27 +20,16 @@ func (this *Problem22B) Solve() {
 
 	//Log.Info("Applied %d instructions deck is now: %s", len(instructions), deck.Print());
 
-	cardOfInterest := 2020;
+	//cardOfInterest := 2019;
+	//index should be 4684
+	cardOfInterest := 4684;
+
+	composite := &DeckOperationComposite{};
+	composite.CompressInverse(instructions, deck);
+	Log.Info("Finished compressing operations y = %dx+%d", composite.M, composite.B);
 	deck.SetCardOfInterest(cardOfInterest);
-	cycles := make(map[int]int);
+	composite.ApplySlim(deck);
 
-
-	i:=0;
-	for {
-		deck.ApplySlim(instructions);
-		i++;
-		pos := deck.CardOfInterestIndex;
-		orig, exists := cycles[pos];
-		if(!exists){
-			cycles[pos] = i;
-		} else{
-			delta := i - orig;
-			cycles[pos] = i;
-			Log.Info("Cycle detected %d - %d", delta, pos);
-			break;
-		}
-	}
-
-	Log.Info("Applied %d instructions card of interest %d is at position %d", len(instructions), deck.CardOfInterest, deck.CardOfInterestIndex);
+	Log.Info("Applied compressed instructions card of interest %d is at position %d", deck.CardOfInterest, deck.CardOfInterestIndex);
 }
 
