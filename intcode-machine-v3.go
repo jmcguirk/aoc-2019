@@ -21,6 +21,9 @@ type IntcodeMachineV3 struct {
 	RelativeBase int64;
 	PauseOnInput bool;
 	PendingInput bool;
+	HasDefaultInput bool;
+	DefaultInputValue int64;
+	PauseOnDefaultInput bool;
 }
 
 
@@ -33,9 +36,14 @@ func (this *IntcodeMachineV3) QueueInput(val int64) {
 	this.InputQueue = append(this.InputQueue, val);
 }
 
+func (this *IntcodeMachineV3) SetDefaultInput(val int64) {
+	this.DefaultInputValue = val;
+	this.HasDefaultInput = true;
+}
+
 
 func (this *IntcodeMachineV3) Load(fileName string) error {
-	Log.Info("Loading intcode v3 machine from %s", fileName)
+	//Log.Info("Loading intcode v3 machine from %s", fileName)
 	this.Registers = make([]*big.Int, 0);
 	this.InputQueue = make([]int64, 0);
 	this.RelativeBase = 0;
@@ -77,6 +85,9 @@ func (this *IntcodeMachineV3) ReadNextOutput() (int64, error, bool) {
 	}
 	if(this.HasHalted){
 		return -1, nil, true;
+	}
+	if(this.LastOutputValue == nil){
+		return -1, nil, false;
 	}
 	return this.LastOutputValue.Int64(), nil, false;
 }
@@ -126,15 +137,22 @@ func (this *IntcodeMachineV3) Execute() error {
 			}
 			break;
 		case IntCodeOpCodeInput:
-			if(this.PauseOnInput && len(this.InputQueue) < 0){
-				Log.Info("Pausing for input");
+			if(this.PauseOnInput && len(this.InputQueue) <= 0){
+				//Log.Info("Pausing for input");
 				this.PendingInput = true;
 				return nil;
+			}
+			breakPostProcess := false;
+			if(this.PauseOnDefaultInput && this.HasDefaultInput && len(this.InputQueue) <= 0){
+				breakPostProcess = true;
 			}
 			this.PendingInput = false;
 			err := this.ExecuteInput(instruction);
 			if(err != nil){
 				return err;
+			}
+			if(breakPostProcess){
+				return nil;
 			}
 			break;
 		case IntCodeOpCodeOutput:
@@ -588,12 +606,20 @@ func (this *IntcodeMachineV3) ExecuteInput(instruction *IntcodeInstruction) erro
 		this.ExpandRegisters(destPosition);
 	}
 
-	if(len(this.InputQueue) <= 0){
+
+	var inputVal int64;
+	if(len(this.InputQueue) <= 0 && !this.HasDefaultInput){
 		return errors.New("Input instruction had no pending input");
 	}
 
-	inputVal := this.InputQueue[0];
-	this.InputQueue = this.InputQueue[1:];
+
+	if(len(this.InputQueue) > 0){
+		inputVal = this.InputQueue[0];
+		this.InputQueue = this.InputQueue[1:];
+	} else{
+		inputVal = this.DefaultInputValue;
+	}
+
 
 	//Log.Info("[INPUT] - Proccessed Input " + strconv.FormatInt(inputVal, 10) + " - stored in " + strconv.FormatInt(destPosition, 10));
 	this.SetValueAtRegister(destPosition, big.NewInt(inputVal));
