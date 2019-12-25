@@ -304,6 +304,28 @@ func (this *IntVec2) Eq(that *IntVec2) bool {
 	return this.X == that.X && this.Y == that.Y;
 }
 
+func rCombinations(p int, n []int, c []int, ccc [][][]int) [][][]int {
+	if len(n) == 0 || p <= 0 {
+		return ccc
+	}
+	if len(ccc) == 0 {
+		ccc = make([][][]int, p)
+	}
+	p--
+	for i := range n {
+		cc := make([]int, len(c)+1)
+		copy(cc, c)
+		cc[len(cc)-1] = n[i]
+		ccc[len(cc)-1] = append(ccc[len(cc)-1], cc)
+		ccc = rCombinations(p, n[i+1:], cc, ccc)
+	}
+	return ccc
+}
+
+func Combinations(p int, n []int) [][][]int {
+	return rCombinations(p, n, nil, nil)
+}
+
 func AllSubstrings(val string, n int) []string{
 	res := make([]string, 0);
 	for len := 1; len <= n; len++{
